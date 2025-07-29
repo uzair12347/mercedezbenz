@@ -30,86 +30,97 @@
   </div>
 
   <!-- Firebase SDK (v8) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <!-- Firebase SDK (v8) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
-      authDomain: "mercedezbenz79-17037.firebaseapp.com",
-      projectId: "mercedezbenz79-17037",
-      storageBucket: "mercedezbenz79-17037.appspot.com",
-      messagingSenderId: "328685720441",
-      appId: "1:328685720441:web:ae850d085363ee4a1b55a8"
-    };
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+    authDomain: "mercedezbenz79-17037.firebaseapp.com",
+    projectId: "mercedezbenz79-17037",
+    storageBucket: "mercedezbenz79-17037.appspot.com",
+    messagingSenderId: "328685720441",
+    appId: "1:328685720441:web:ae850d085363ee4a1b55a8"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore(); // ✅ Firestore init
 
-    function generateCaptchaText(length = 5) {
-      const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-      let text = "";
-      for (let i = 0; i < length; i++) {
-        text += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return text;
+  function generateCaptchaText(length = 5) {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let text = "";
+    for (let i = 0; i < length; i++) {
+      text += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return text;
+  }
+
+  let captchaText = generateCaptchaText();
+  const captchaImage = document.getElementById("captchaImage");
+  captchaImage.src = "https://dummyimage.com/100x40/ddd/000&text=" + encodeURIComponent(captchaText);
+
+  document.getElementById("loginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const mobile = document.getElementById("mobile").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const captchaInput = document.getElementById("captchaInput").value.trim();
+
+    if (!/^\d{10}$/.test(mobile)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
     }
 
-    let captchaText = generateCaptchaText();
-    const captchaImage = document.getElementById("captchaImage");
-    captchaImage.src = "https://dummyimage.com/100x40/ddd/000&text=" + encodeURIComponent(captchaText);
+    if (password.length < 6) {
+      alert("Password must be at least 6 characters.");
+      return;
+    }
 
-    document.getElementById("loginForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
+    if (captchaInput.toLowerCase() !== captchaText.toLowerCase()) {
+      alert("Captcha is incorrect.");
+      captchaText = generateCaptchaText();
+      captchaImage.src = "https://dummyimage.com/100x40/ddd/000&text=" + encodeURIComponent(captchaText);
+      document.getElementById("captchaInput").value = "";
+      return;
+    }
 
-      const mobile = document.getElementById("mobile").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const captchaInput = document.getElementById("captchaInput").value.trim();
+    const email = "92" + mobile + "@mercedez.com";
 
-      if (!/^\d{10}$/.test(mobile)) {
-        alert("Please enter a valid 10-digit mobile number.");
-        return;
+    try {
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+
+      // ✅ Token store
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+      localStorage.setItem("uid", user.uid);
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userPhone", "0" + mobile);
+
+      // ✅ Firestore me user ka record bana do agar nahi hai
+      const userRef = db.collection("users").doc(user.uid);
+      const doc = await userRef.get();
+
+      if (!doc.exists) {
+        await userRef.set({
+          uid: user.uid,
+          phone: "0" + mobile,
+          createdAt: new Date(),
+          balance: 0
+        });
       }
 
-      if (password.length < 6) {
-        alert("Password must be at least 6 characters.");
-        return;
-      }
+      alert("Login successful!");
+      window.location.href = "more.html";
+    } catch (error) {
+      console.error("Firebase login error:", error);
+      alert("Username or password is incorrect.");
+    }
+  });
+</script>
 
-      if (captchaInput.toLowerCase() !== captchaText.toLowerCase()) {
-        alert("Captcha is incorrect.");
-        captchaText = generateCaptchaText();
-        captchaImage.src = "https://dummyimage.com/100x40/ddd/000&text=" + encodeURIComponent(captchaText);
-        document.getElementById("captchaInput").value = "";
-        return;
-      }
-
-      const email = "92" + mobile + "@mercedez.com";
-
-      try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        const token = await user.getIdToken();        // ✅ Yahan token le rahe hain
-       localStorage.setItem("token", token);
-
-        localStorage.setItem("uid", user.uid);
-        localStorage.setItem("isLoggedIn", "true");
-
-        localStorage.setItem("userPhone", "0" + mobile);
-
-
-
-
-        alert("Login successful!");
-        window.location.href = "more.html"; // Change if needed
-      } catch (error) {
-        console.error("Firebase login error:", error);
-        alert("Username or password is incorrect.");
-      }
-    });
-   
-
-  </script>
 </body>
 </html>
