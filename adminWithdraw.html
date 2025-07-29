@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Withdraw Requests</title>
+ <!-- Firebase App (Core SDK) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<!-- Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      background-color: #111;
+      color: white;
+      font-family: Arial;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #222;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #555;
+      text-align: center;
+    }
+    th {
+      background-color: #333;
+    }
+    button {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+    }
+    .approve {
+      background-color: green;
+    }
+    .reject {
+      background-color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Withdraw Requests (Admin Panel)</h1>
+  <table id="withdrawTable">
+    <thead>
+      <tr>
+        <th>User Phone</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // ✅ Your Firebase Config Here
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+  authDomain: "mercedezbenz79-17037.firebaseapp.com",
+  databaseURL: "https://mercedezbenz79-17037-default-rtdb.firebaseio.com",
+  projectId: "mercedezbenz79-17037",
+  storageBucket: "mercedezbenz79-17037.firebasestorage.app",
+  messagingSenderId: "328685720441",
+  appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
+  measurementId: "G-G2K4V2LZEW"
+};
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const tableBody = document.querySelector("#withdrawTable tbody");
+
+    function loadWithdraws() {
+      db.collection("withdrawRequests")
+        .orderBy("createdAt", "desc")
+        .get()
+        .then(snapshot => {
+          tableBody.innerHTML = ""; // Clear table
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+              <td>${data.userPhone || "-"}</td>
+              <td>${data.amount || 0}</td>
+              <td>${data.createdAt?.toDate().toLocaleString() || "-"}</td>
+              <td>${data.status}</td>
+              <td>
+                ${data.status === "pending" ? `
+                  <button class="approve" onclick="updateStatus('${doc.id}', 'approved')">Approve</button>
+                  <button class="reject" onclick="updateStatus('${doc.id}', 'rejected')">Reject</button>
+                ` : '—'}
+              </td>
+            `;
+
+            tableBody.appendChild(tr);
+          });
+        })
+        .catch(err => {
+          console.error("Error loading withdraws:", err);
+        });
+    }
+
+    function updateStatus(id, newStatus) {
+      db.collection("withdrawRequests")
+        .doc(id)
+        .update({ status: newStatus })
+        .then(() => {
+          alert("Status updated to " + newStatus);
+          loadWithdraws(); // reload table
+        })
+        .catch(err => {
+          console.error("Error updating status:", err);
+        });
+    }
+
+    loadWithdraws(); // Load on page open
+  </script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+body {
+  background-image: url("mercedes-benz-slr-mclaren-stirling-moss--photo-credit-rm-sothebys_100873170_h.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  background-color: #111;
+  padding: 30px;
+  border-radius: 10px;
+  border: 2px solid #00ffff;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.logo {
+  width: 80px;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  display: flex;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.input-group .prefix {
+  background-color: #333;
+  color: #00ffff;
+  padding: 10px;
+  border: none;
+  border-radius: 5px 0 0 5px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.input-group input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 0 5px 5px 0;
+  outline: none;
+  min-width: 0;
+}
+
+input[type="password"],
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.captcha-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.captcha-group img {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  user-select: none;
+  height: 40px;
+}
+
+button {
+  background-color: #00ffff;
+  color: #000;
+  border: none;
+  padding: 12px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #00cccc;
+}
+
+.register {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.register a {
+  color: #00ffff;
+  text-decoration: none;
+}
+
+.register a:hover {
+  text-decoration: underline;
+}
+
+/* ✅ Responsive Design for Small Screens */
+@media screen and (max-width: 400px) {
+  .container {
+    padding: 20px;
+  }
+
+  .input-group {
+    flex-direction: column;
+  }
+
+  .input-group .prefix,
+  .input-group input[type="text"] {
+    border-radius: 5px;
+  }
+
+  .input-group .prefix {
+    margin-bottom: 5px;
+  }
+
+  .captcha-group {
+    flex-direction: column;
+  }
+
+  .captcha-group img {
+    margin-top: 10px;
+  }
+}

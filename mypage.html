@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Page</title>
+  <style>
+    body {
+      margin: 0;
+      padding-bottom: 80px;
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #0f0f0f;
+    }
+
+    h2, h3 {
+      margin-top: 20px;
+      color: white;
+    }
+
+    #balance {
+      font-weight: bold;
+      color: #00cc99;
+      font-size: 1.8em;
+    }
+
+    #registeredNumber {
+      font-size:25px;
+      color: white;
+      margin-top: 5px;
+    }
+
+    .menu-column {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      padding: 0 5%;
+    }
+
+    .menu-column button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #1a1a1a;
+      border: 2px solid #00ffff;
+      box-shadow: 0 0 12px #00FFFF;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .menu-column button:hover {
+      background-color: #00cc99;
+      color: #111;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #222;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+    }
+
+    .bottom-nav img {
+      width: 24px;
+      height: 24px;
+      display: block;
+      margin: 0 auto 2px;
+      filter: drop-shadow(0 0 3px #00ffcc);
+    }
+
+    .bottom-nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .bottom-nav a:hover {
+      color: #00ffcc;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 480px) {
+      #balance {
+        font-size: 1.5em;
+      }
+
+      .menu-column button {
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      .bottom-nav img {
+        width: 22px;
+        height: 22px;
+      }
+
+      .bottom-nav a {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Your Balance: Rs <span id="balance">0</span></h2>
+  <div id="registeredNumber">Loading...</div>
+
+  <div class="menu-column">
+    <button onclick="location.href='withdraw.html'">Withdraw</button>
+    <button onclick="location.href='team.html'">Invite Friends</button>
+    <button onclick="location.href='withdraw-history.html'">Withdraw History</button>
+    <button onclick="location.href='recharge-history.html'">Recharge History</button>
+    <button onclick="location.href='customer-service.html'">Customer Service</button>
+    <button onclick="location.href='about.html'">About</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Bottom Navbar -->
+  <div class="bottom-nav">
+    <a href="more.html"><img src="OIP (4).jpeg" alt="Home" /><span>Home</span></a>
+    <a href="earning.html"><img src="OIP (5).jpeg" alt="Earning" /><span>Earning</span></a>
+    <a href="team.html"><img src="OIP (6).jpeg" alt="Team" /><span>Team</span></a>
+    <a href="mypage.html" class="active"><img src="OIP (7).jpeg" alt="My Page" /><span>My</span></a>
+  </div>
+
+  <!-- Firebase JS SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+      authDomain: "mercedezbenz79-17037.firebaseapp.com",
+      projectId: "mercedezbenz79-17037",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    function logout() {
+      auth.signOut().then(() => {
+        localStorage.clear();
+        alert("You have been logged out!");
+        window.location.href = "login.html";
+      });
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        alert("Please login first.");
+        return window.location.href = "login.html";
+      }
+
+      try {
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        if (!userDoc.exists) {
+          alert("User not found in Firestore.");
+          return;
+        }
+
+        const data = userDoc.data();
+        document.getElementById("balance").textContent = data.balance?.toFixed() || "0";
+        document.getElementById("registeredNumber").textContent = data.phone || "N/A";
+
+      } catch (err) {
+        console.error("Firestore error:", err);
+        alert("Failed to load user data.");
+      }
+    });
+  </script>
+</body>
+</html>

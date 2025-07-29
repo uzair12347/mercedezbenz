@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Payment</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      background-color: #111;
+      border: 2px solid #00ffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00ffff;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    input, button {
+      margin-top: 15px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      width: 100%;
+    }
+
+    .btn {
+      background-color: #00ffff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #00cccc;
+    }
+
+    #accountDetails {
+      margin-top: 20px;
+      font-size: 15px;
+      background: #222;
+      padding: 12px;
+      border-radius: 8px;
+      color: #00ff00;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+
+      input, button {
+        font-size: 15px;
+        padding: 10px;
+      }
+
+      #accountDetails {
+        font-size: 14px;
+        padding: 10px;
+      }
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+      authDomain: "mercedezbenz79-17037.firebaseapp.com",
+      databaseURL: "https://mercedezbenz79-17037-default-rtdb.firebaseio.com",
+      projectId: "mercedezbenz79-17037",
+      storageBucket: "mercedezbenz79-17037.firebasestorage.app",
+      messagingSenderId: "328685720441",
+      appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
+      measurementId: "G-G2K4V2LZEW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const methodRaw = localStorage.getItem("selectedPaymentMethod");
+    const method = methodRaw ? methodRaw.toLowerCase() : null;
+    const accountDetailsDiv = document.getElementById("accountDetails");
+
+    if (method === "easypaisa") {
+      accountDetailsDiv.innerHTML = `
+        <strong>EasyPaisa Account:</strong><br>
+        03320217021<br>
+        Name: Asma
+      `;
+    } else if (method === "bank") {
+      accountDetailsDiv.innerHTML = `
+        <strong>Meezan Bank Account:</strong><br>
+        01480111287367<br>
+        Name: Uzair Ahmed
+      `;
+    } else {
+      accountDetailsDiv.innerHTML = `<span style="color:red;">Unknown payment method selected.</span>`;
+    }
+
+    window.submitDetails = async function () {
+      const transactionId = document.getElementById("transactionId").value.trim();
+      const planId = localStorage.getItem("selectedPlanId");
+
+      if (!transactionId || !planId || !method) {
+        alert("Please enter Transaction ID and ensure plan and method are selected.");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "UserPlanRequests"), {
+          transactionId,
+          planId,
+          paymentMethod: method,
+          status: "pending",
+          createdAt: serverTimestamp(),
+        });
+
+        alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
+
+        localStorage.removeItem("selectedPlanId");
+        localStorage.removeItem("selectedPaymentMethod");
+
+        window.location.href = "more.html";
+      } catch (error) {
+        console.error("Error submitting payment:", error);
+        alert("❌ Error submitting payment. Please try again.");
+      }
+    };
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h2>Upload Payment Details</h2>
+    <div id="accountDetails"></div>
+
+    <input type="text" id="transactionId" placeholder="Enter Transaction ID" />
+    <button class="btn" onclick="submitDetails()">Submit</button>
+  </div>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Earnings</title>
+
+  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: rgb(0, 0, 0);
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      text-align: center;
+      border-top: 1px solid #ccc;
+      padding: 8px 0;
+      max-width: 1200px;
+      box-sizing: border-box;
+    }
+    .bottom-nav a {
+      text-align: center;
+      color: #fffefe;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .bottom-nav img {
+      width: 25px;
+      height: 25px;
+      display: block;
+      margin: 0 auto 2px;
+      margin-right: auto;
+    }
+    .container {
+      background-color: #111;
+      padding: 30px;
+      border-radius: 10px;
+      border: 2px solid #0ff;
+      display: inline-block;
+      margin-top: 50px;
+    }
+    h1 {
+      color: #0ff;
+    }
+    .amount {
+      font-size: 48px;
+      color: #0f0;
+      margin: 20px 0;
+    }
+    .logout-btn {
+      margin-top: 20px;
+      padding: 10px 25px;
+      font-size: 16px;
+      background-color: #f00;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .logout-btn:hover {
+      background-color: #c00;
+    }
+  </style>
+</head>
+<body>
+  <div id="earning-container"></div>
+  <div class="container">
+    <h1>Your Earnings</h1>
+    <div class="amount" id="earning">Loading...</div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="more.html"><img src="OIP (4).jpeg" alt="Home" /><span>Home</span></a>
+    <a href="earning.html"><img src="OIP (5).jpeg" alt="Earning" /><span>Earning</span></a>
+    <a href="team.html"><img src="OIP (6).jpeg" alt="Team" /><span>Team</span></a>
+    <a href="mypage.html"><img src="OIP (7).jpeg" alt="My Page" /><span>My</span></a>
+  </div>
+
+<script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2ZIjzVYr2c",
+    authDomain: "mercedezbenz-3526e.firebaseapp.com",
+    projectId: "mercedezbenz-3526e",
+    storageBucket: "mercedezbenz-3526e.appspot.com",
+    messagingSenderId: "1096954696719",
+    appId: "1:1096954696719:web:7e1c5e6bb3498009a17a4e",
+    measurementId: "G-VSKX86E99X"
+  };
+
+  // Initialize Firebase app and Firestore only (no firebase.auth needed here)
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const earningContainer = document.getElementById("earning-container");
+  earningContainer.innerHTML = "Loading...";
+
+  // Check if phone is stored in localStorage (means user logged in via your custom system)
+  const phone = localStorage.getItem("userPhone");
+
+  if (!phone) {
+    alert("User not logged in");
+    window.location.href = "login.html"; // redirect to your login page
+  } else {
+    // Fetch approved plans for this phone number from Firestore
+    db.collection("approvedPlans")
+      .where("userPhone", "==", phone)
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          earningContainer.innerHTML = "No active plans found.";
+          return;
+        }
+
+        earningContainer.innerHTML = ""; // clear loading
+
+        querySnapshot.forEach((doc) => {
+          const plan = doc.data();
+          const planCard = `
+            <div class="plan-card">
+              <h3>${plan.planName}</h3>
+              <p>Daily Income: Rs ${plan.dailyIncome}</p>
+              <p>Start Date: ${plan.startDate || "N/A"}</p>
+            </div>
+          `;
+          earningContainer.innerHTML += planCard;
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching plans:", error);
+        earningContainer.innerHTML = "Failed to load plans.";
+      });
+  }
+</script>
+</body>
+</html>

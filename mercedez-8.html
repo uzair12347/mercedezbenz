@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MERCEDEZ-8 Payment</title>
+
+  <!-- Firebase (Compat version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #111;
+      border: 2px solid #00ffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00ffff;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    select, button {
+      margin-top: 20px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #00ffff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00cccc;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+
+      select, button {
+        font-size: 15px;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>MERCEDEZ-8 Payment</h2>
+    <p id="amount">Loading...</p>
+
+    <label for="paymentMethod">Select Payment Method:</label>
+    <select id="paymentMethod">
+      <option value="">-- Select Method --</option>
+      <option value="easypaisa">EasyPaisa</option>
+      <option value="bank">Meezan Bank</option>
+    </select>
+
+    <button onclick="proceedToPayment()">Confirm Payment</button>
+  </div>
+
+  <script>
+    // ✅ Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+      authDomain: "mercedezbenz79-17037.firebaseapp.com",
+      databaseURL: "https://mercedezbenz79-17037-default-rtdb.firebaseio.com",
+      projectId: "mercedezbenz79-17037",
+      storageBucket: "mercedezbenz79-17037.firebasestorage.app",
+      messagingSenderId: "328685720441",
+      appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
+      measurementId: "G-G2K4V2LZEW"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let selectedPlanId = null;
+
+    async function fetchPlan() {
+      try {
+        const querySnapshot = await db.collection("plans")
+          .where("name", "==", "MERCEDEZ-8")
+          .get();
+
+        if (!querySnapshot.empty) {
+          const planDoc = querySnapshot.docs[0];
+          const planData = planDoc.data();
+
+          selectedPlanId = planDoc.id;
+          document.getElementById("amount").textContent = `Amount: Rs. ${planData.price.toLocaleString()}`;
+        } else {
+          document.getElementById("amount").textContent = "Plan not found in Firebase.";
+        }
+      } catch (err) {
+        console.error("Error fetching plan:", err);
+        document.getElementById("amount").textContent = "Error loading plan.";
+      }
+    }
+
+    fetchPlan();
+
+    function proceedToPayment() {
+      const method = document.getElementById("paymentMethod").value;
+      if (!method) {
+        alert("Please select a payment method.");
+        return;
+      }
+
+      if (!selectedPlanId) {
+        alert("Plan not loaded correctly. Try again.");
+        return;
+      }
+
+      localStorage.setItem("selectedPaymentMethod", method);
+      localStorage.setItem("selectedPlanId", selectedPlanId);
+
+      window.location.href = "payment8.html";
+    }
+  </script>
+</body>
+</html>

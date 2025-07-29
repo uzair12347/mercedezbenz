@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login</title>
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+  <div class="container">
+    <img src="OIP (3).jpeg" alt="Logo" class="logo" />
+    <h2>Login</h2>
+
+    <form id="loginForm" autocomplete="off">
+      <div class="input-group">
+        <span class="prefix">+92</span>
+        <input type="text" id="mobile" placeholder="Enter your 10-digit mobile number" maxlength="10" required />
+      </div>
+
+      <input type="password" id="password" placeholder="Enter password" required />
+
+      <div class="captcha-group">
+        <img id="captchaImage" alt="Captcha" />
+        <input type="text" id="captchaInput" placeholder="Enter Captcha" required />
+      </div>
+
+      <button type="submit">Login</button>
+      <p class="register">Don't have an account? <a href="index.html">Register</a></p>
+    </form>
+  </div>
+
+  <!-- Firebase SDK (v8) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+      authDomain: "mercedezbenz79-17037.firebaseapp.com",
+      projectId: "mercedezbenz79-17037",
+      storageBucket: "mercedezbenz79-17037.appspot.com",
+      messagingSenderId: "328685720441",
+      appId: "1:328685720441:web:ae850d085363ee4a1b55a8"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function generateCaptchaText(length = 5) {
+      const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+      let text = "";
+      for (let i = 0; i < length; i++) {
+        text += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return text;
+    }
+
+    let captchaText = generateCaptchaText();
+    const captchaImage = document.getElementById("captchaImage");
+    captchaImage.src = "https://dummyimage.com/100x40/ddd/000&text=" + encodeURIComponent(captchaText);
+
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const mobile = document.getElementById("mobile").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const captchaInput = document.getElementById("captchaInput").value.trim();
+
+      if (!/^\d{10}$/.test(mobile)) {
+        alert("Please enter a valid 10-digit mobile number.");
+        return;
+      }
+
+      if (password.length < 6) {
+        alert("Password must be at least 6 characters.");
+        return;
+      }
+
+      if (captchaInput.toLowerCase() !== captchaText.toLowerCase()) {
+        alert("Captcha is incorrect.");
+        captchaText = generateCaptchaText();
+        captchaImage.src = "https://dummyimage.com/100x40/ddd/000&text=" + encodeURIComponent(captchaText);
+        document.getElementById("captchaInput").value = "";
+        return;
+      }
+
+      const email = "92" + mobile + "@mercedez.com";
+
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        const token = await user.getIdToken();        // ✅ Yahan token le rahe hain
+       localStorage.setItem("token", token);
+
+        localStorage.setItem("uid", user.uid);
+        localStorage.setItem("isLoggedIn", "true");
+
+        localStorage.setItem("userPhone", "0" + mobile);
+
+
+
+
+        alert("Login successful!");
+        window.location.href = "more.html"; // Change if needed
+      } catch (error) {
+        console.error("Firebase login error:", error);
+        alert("Username or password is incorrect.");
+      }
+    });
+   
+
+  </script>
+</body>
+</html>

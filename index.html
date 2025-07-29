@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register</title>
+  <style>
+    /* سادہ سٹائلنگ، اپنی style.css میں ڈال سکتے ہیں */
+   /* ✅ Updated Responsive CSS */
+body {
+  background-image: url("mercedes-benz-slr-mclaren-stirling-moss--photo-credit-rm-sothebys_100873170_h.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 10px;
+}
+
+.container {
+  background-color: #111;
+  padding: 30px 20px;
+  border-radius: 10px;
+  border: 2px solid #00ffff;
+  width: 100%;
+  max-width: 350px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.logo {
+  width: 80px;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  display: flex;
+  margin-bottom: 15px;
+  flex-direction: row;
+}
+
+.input-group .prefix {
+  background-color: #333;
+  color: #00ffff;
+  padding: 10px;
+  border: none;
+  border-radius: 5px 0 0 5px;
+  user-select: none;
+  font-size: 14px;
+}
+
+.input-group input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 0 5px 5px 0;
+  outline: none;
+  font-size: 14px;
+}
+
+input[type="password"], input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.captcha-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.captcha-group img {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  user-select: none;
+  height: 40px;
+}
+
+button {
+  background-color: #00ffff;
+  color: #000;
+  border: none;
+  padding: 12px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #00cccc;
+}
+
+.login {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.login a {
+  color: #00ffff;
+  text-decoration: none;
+}
+
+.login a:hover {
+  text-decoration: underline;
+}
+
+/* 🔻 Responsive Adjustments for small screens */
+@media (max-width: 400px) {
+  .container {
+    padding: 20px 15px;
+  }
+
+  .input-group {
+    flex-direction: column;
+  }
+
+  .input-group .prefix {
+    border-radius: 5px 5px 0 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  .input-group input[type="text"] {
+    border-radius: 0 0 5px 5px;
+  }
+
+  .captcha-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .logo {
+    width: 60px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="OIP (3).jpeg" alt="Logo" class="logo" />
+    <h2>Register</h2>
+
+    <form id="registerForm" autocomplete="off">
+      <div class="input-group">
+        <span class="prefix">+92</span>
+        <input type="text" id="mobile" placeholder="Enter your 10-digit mobile number" maxlength="10" required />
+      </div>
+
+      <input type="password" id="password" placeholder="Enter password (min 6 chars)" required />
+
+      <div class="captcha-group">
+        <img id="captchaImage" alt="Captcha" />
+        <input type="text" id="captchaInput" placeholder="Enter Captcha" required />
+      </div>
+
+      <button type="submit">Register</button>
+      <p class="login">Already have an account? <a href="login.html">Login</a></p>
+    </form>
+  </div>
+
+  <!-- Firebase SDK (v8) -->
+ <!-- Firebase App (core SDK) -->
+<!-- Add Firebase App -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<!-- Add Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<!-- Add Firebase Realtime Database -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+
+
+  <!-- Add Firestore SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+    authDomain: "mercedezbenz79-17037.firebaseapp.com",
+    databaseURL: "https://mercedezbenz79-17037-default-rtdb.firebaseio.com",
+    projectId: "mercedezbenz79-17037",
+    storageBucket: "mercedezbenz79-17037.firebasestorage.app",
+    messagingSenderId: "328685720441",
+    appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
+    measurementId: "G-G2K4V2LZEW"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+  const firestore = firebase.firestore(); // ✅ Initialize Firestore
+
+  function generateCaptchaText(length = 5) {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let text = "";
+    for (let i = 0; i < length; i++) {
+      text += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return text;
+  }
+
+  let captchaText = generateCaptchaText();
+  const captchaImage = document.getElementById("captchaImage");
+  captchaImage.src = "https://dummyimage.com/100x40/ddd/000&text=" + encodeURIComponent(captchaText);
+
+  document.getElementById("registerForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const mobile = document.getElementById("mobile").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const captchaInput = document.getElementById("captchaInput").value.trim();
+
+    if (!/^\d{10}$/.test(mobile)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    if (password.length < 6) {
+      alert("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (captchaInput.toLowerCase() !== captchaText.toLowerCase()) {
+      alert("Captcha is incorrect.");
+      captchaText = generateCaptchaText();
+      captchaImage.src = "https://dummyimage.com/100x40/ddd/000&text=" + encodeURIComponent(captchaText);
+      document.getElementById("captchaInput").value = "";
+      return;
+    }
+
+    const email = "92" + mobile + "@mercedez.com";
+
+    try {
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+
+      // ✅ Save to Realtime Database
+      await db.ref("users/" + user.uid).set({
+        mobile: "+92" + mobile,
+        registeredAt: new Date().toISOString()
+      });
+
+      // ✅ Save to Firestore (for team.html)
+      const urlParams = new URLSearchParams(window.location.search);
+      const invitedBy = urlParams.get("ref") || null;
+
+      await firestore.collection("users").doc(user.uid).set({
+        phone: "+92" + mobile,
+        referralCode: user.uid.slice(-6),
+        invitedBy: invitedBy,
+        totalCommission: 0,
+        createdAt: new Date().toISOString()
+      });
+
+      // ✅ Local storage
+      localStorage.setItem("uid", user.uid);
+      localStorage.setItem("isLoggedIn", "true");
+
+      alert("Registered successfully!");
+      window.location.href = "more.html";
+    } catch (error) {
+      console.error("Firebase registration error:", error);
+      alert(error.message || "An error occurred during registration.");
+    }
+  });
+</script>
+
+</body>
+</html>

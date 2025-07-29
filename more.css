@@ -1,0 +1,172 @@
+body {
+  margin: 0;
+  background-color: #0f0f0f;
+  font-family: Arial, sans-serif;
+  color: #ffffff;
+}
+
+/* Slider Styles */
+.slider-wrapper {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.slider-touch {
+  display: flex;
+  animation: slide 12s infinite ease-in-out;
+}
+
+.slide {
+  min-width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Plan Cards Container */
+.plan-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  justify-content: center;
+  padding: 10px;
+  margin-bottom: 80px;
+}
+
+/* Plan Card */
+.plan-card {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border: 2px solid #00ffff;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 12px #00FFFF;
+  text-align: center;
+}
+
+.plan-card img {
+  width: 100%;
+  height: auto;
+  max-height: 150px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.plan-card h3 {
+  color: #00ffff;
+  margin: 10px 0 5px;
+  font-size: 16px;
+}
+
+.plan-card p {
+  margin: 0;
+  font-size: 15px;
+}
+
+.plan-card a {
+  display: inline-block;
+  margin-top: 8px;
+  text-decoration: none;
+  background: #00ffff;
+  color: #000;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #000;
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid #ccc;
+  padding: 8px 0;
+  z-index: 100;
+}
+
+.bottom-nav a {
+  text-align: center;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.bottom-nav img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  margin: 0 auto 3px;
+}
+
+/* Slider animation */
+@keyframes slide {
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-100%); }
+  50%  { transform: translateX(-200%); }
+  75%  { transform: translateX(-300%); }
+  100% { transform: translateX(0); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .slider-wrapper {
+    height: 160px;
+  }
+
+  .slide {
+    height: 160px;
+  }
+
+  .plan-card h3 {
+    font-size: 14px;
+  }
+
+  .plan-card p {
+    font-size: 14px;
+  }
+
+  .plan-card a {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+
+  .bottom-nav a {
+    font-size: 11px;
+  }
+
+  .bottom-nav img {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .slider-wrapper {
+    height: 140px;
+  }
+
+  .slide {
+    height: 140px;
+  }
+
+  .plan-card h3 {
+    font-size: 13px;
+  }
+
+  .plan-card p {
+    font-size: 13px;
+  }
+
+  .plan-card a {
+    font-size: 12px;
+  }
+
+  .bottom-nav img {
+    width: 20px;
+    height: 20px;
+  }
+}

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Team Overview</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #0f0f0f;
+      color: white;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .info-box {
+      background: rgb(22, 22, 22);
+      padding: 15px;
+      border: 2px solid #00ffff;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 12px #00FFFF;
+    }
+
+    .info-box p,
+    .info-box h3 {
+      color: white;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    ul {
+      padding-left: 16px;
+      margin: 10px 0;
+    }
+
+    li {
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: #222;
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid #ccc;
+      padding: 8px 0;
+      z-index: 1000;
+    }
+
+    .bottom-nav a {
+      text-align: center;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: bold;
+      flex: 1;
+    }
+
+    .bottom-nav img {
+      width: 24px;
+      height: 24px;
+      display: block;
+      margin: 0 auto 2px;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      .info-box {
+        padding: 12px;
+      }
+
+      .info-box h3 {
+        font-size: 15px;
+      }
+
+      .bottom-nav a {
+        font-size: 11px;
+      }
+
+      .bottom-nav img {
+        width: 22px;
+        height: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Team Overview</h1>
+
+  <div class="info-box">
+    <p>Invite Code: <span id="inviteCode"></span></p>
+    <p>Your Referral Link: <span id="referralLink"></span></p>
+    <p><strong>Total Commission:</strong> <span id="totalCommission">Rs 0.00</span></p>
+  </div>
+
+  <div class="info-box">
+    <h3>Level 1 Members</h3>
+    <ul id="level1List"></ul>
+  </div>
+
+  <div class="info-box">
+    <h3>Level 2 Members</h3>
+    <ul id="level2List"></ul>
+  </div>
+
+  <div class="info-box">
+    <h3>Level 3 Members</h3>
+    <ul id="level3List"></ul>
+  </div>
+
+  <div class="info-box">
+    <h3>Recharge Members (Approved Plans)</h3>
+    <ul id="rechargeList"></ul>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="more.html"><img src="OIP (4).jpeg" alt="Home" /><span>Home</span></a>
+    <a href="earning.html"><img src="OIP (5).jpeg" alt="Earning" /><span>Earning</span></a>
+    <a href="team.html"><img src="OIP (6).jpeg" alt="Team" /><span>Team</span></a>
+    <a href="mypage.html"><img src="OIP (7).jpeg" alt="My Page" /><span>My</span></a>
+  </div>
+
+  <!-- Firebase Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+      authDomain: "mercedezbenz79-17037.firebaseapp.com",
+      projectId: "mercedezbenz79-17037",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const inviteCodeEl = document.getElementById("inviteCode");
+    const referralLinkEl = document.getElementById("referralLink");
+    const level1List = document.getElementById("level1List");
+    const level2List = document.getElementById("level2List");
+    const level3List = document.getElementById("level3List");
+    const rechargeListEl = document.getElementById("rechargeList");
+    const commissionEl = document.getElementById("totalCommission");
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("Please login to view your team.");
+        return window.location.href = "login.html";
+      }
+
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        alert("User document not found!");
+        return;
+      }
+
+      const userData = userDoc.data();
+      const myReferralCode = userData.referralCode;
+      inviteCodeEl.textContent = myReferralCode;
+      referralLinkEl.textContent = `${window.location.origin}/index.html?ref=${myReferralCode}`;
+
+      let totalCommission = 0;
+
+      async function getTeamMembers(level, code) {
+        const membersQuery = query(collection(db, "users"), where("invitedBy", "==", code));
+        const membersSnap = await getDocs(membersQuery);
+        const list = [];
+
+        for (const docSnap of membersSnap.docs) {
+          const member = docSnap.data();
+          member.id = docSnap.id;
+          list.push(member);
+
+          const plansQuery = query(
+            collection(db, "approvedPlans"),
+            where("userId", "==", docSnap.id),
+            where("status", "==", "approved")
+          );
+          const plansSnap = await getDocs(plansQuery);
+          if (!plansSnap.empty) {
+            plansSnap.forEach(plan => {
+              const planData = plan.data();
+              const rechargeLi = document.createElement("li");
+              rechargeLi.textContent = `${member.phone || "Unknown"} - ${planData.planName} - Rs ${planData.amount}`;
+              rechargeListEl.appendChild(rechargeLi);
+
+              let rate = level === 1 ? 0.25 : level === 2 ? 0.15 : 0.10;
+              totalCommission += planData.amount * rate;
+            });
+          }
+        }
+        return list;
+      }
+
+      const level1 = await getTeamMembers(1, myReferralCode);
+      level1.forEach(m => {
+        const li = document.createElement("li");
+        li.textContent = m.phone || "Unknown";
+        level1List.appendChild(li);
+      });
+
+      const level2 = [];
+      for (const m1 of level1) {
+        const team = await getTeamMembers(2, m1.referralCode);
+        team.forEach(m2 => {
+          level2.push(m2);
+          const li = document.createElement("li");
+          li.textContent = m2.phone || "Unknown";
+          level2List.appendChild(li);
+        });
+      }
+
+      for (const m2 of level2) {
+        const team = await getTeamMembers(3, m2.referralCode);
+        team.forEach(m3 => {
+          const li = document.createElement("li");
+          li.textContent = m3.phone || "Unknown";
+          level3List.appendChild(li);
+        });
+      }
+
+      commissionEl.textContent = `Rs ${totalCommission.toFixed(2)}`;
+    });
+  </script>
+</body>
+</html>

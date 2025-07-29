@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <h2>More Earn Zone IS A WEBSITE WHERE YOU CAN EARN<br> MONEY BY WATCHING VIDEOS. HERE YOU CAN EARN<br> UPTO 1500 IN A DAY TO JOIN THIS PLATFORM PAY THE <br>FEE OF RS 500 IN THE EASYPAISA <br> ACCOUNT BELOW AFTER SENDING THE FEES.JOIN NOW <br> AND START EARNING TODAY!</h2>
+
+    <div class="container">
+        <h2>Send payment on this number : <br>
+            Amount : Rs 500<br>Easy Paisa ACCOUNT Number:<br>03333937236<br>Account TiTle: Gulam Rasool</h2>
+        </div>
+
+          <form id="form"><br>
+            <h3>Enter Transcation Screenshot:</h3>
+            <input type="file" id="fileInput"  required><br>
+                <button type="button" id="submit"  onclick="transaction()">Submit</button>
+          </form>
+
+
+          <script>
+            function transaction (){
+            const form = document.getElementById('form');
+          if (form.checkValidity()) {
+            // Registration logic yahan add karain
+            alert("Thank you for uploading your payment screenshot.");
+              window.location.href= "more.html";
+          } else {
+            alert("Please paste payment screenshot.");
+          }
+        }
+          </script>
+
+    
+
+</body>
+</html>

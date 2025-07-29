@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Logout</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+
+    h2 {
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background-color: #00ffff;
+      color: #000;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00ffff;
+    }
+
+    .btn:hover {
+      background-color: #00cccc;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Logout Page</h2>
+
+  <button class="btn" onclick="logoutUser()">Logout</button>
+
+  <script>
+    function logoutUser() {
+      const token = localStorage.getItem("token");
+
+      // Optional backend logout request (if implemented)
+      if (token) {
+        fetch("http://localhost:5000/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        }).catch(err => {
+          console.error("Backend logout failed", err);
+        });
+      }
+
+      // Clear localStorage and redirect
+      localStorage.clear();
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 1000);
+    }
+  </script>
+
+</body>
+</html>

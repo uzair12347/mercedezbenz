@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Withdraw</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #0f0f0f;
+      margin: 0;
+    }
+
+    h2, p, h3 {
+      color: white;
+    }
+
+    input, select, button {
+      border: 2px solid #00ffff;
+      box-shadow: 0 0 12px #00FFFF;
+      background-color: #0f0f0f;
+      color: white;
+      margin: 10px auto;
+      padding: 12px;
+      width: 90%;
+      max-width: 400px;
+      font-size: 16px;
+      display: block;
+      border-radius: 8px;
+    }
+
+    .section {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 20px 10px;
+      margin-top: 30px;
+      width: 100%;
+      max-width: 450px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .section ::placeholder {
+      color: #ccc;
+    }
+
+    #success {
+      color: #00ff99;
+      margin-top: 10px;
+    }
+
+    #error {
+      color: #ff6666;
+      margin-top: 10px;
+    }
+
+    #balance {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .instructions {
+      text-align: left;
+      font-size: 14px;
+      color: #ffffff;
+      margin-top: 10px;
+      padding: 0 5%;
+    }
+
+    @media (max-width: 480px) {
+      input, select, button {
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      .instructions {
+        font-size: 13px;
+        padding: 0 10px;
+      }
+
+      .section {
+        padding: 15px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Withdraw Funds</h2>
+  <p>Your Current Balance: Rs <span id="balance">0</span></p>
+
+  <div class="section">
+    <h3>Bind Bank Card</h3>
+    <select id="bankName">
+      <option value="">Select Bank Type</option>
+      <option value="JazzCash">JazzCash</option>
+      <option value="EasyPaisa">EasyPaisa</option>
+      <option value="BankAccount">Bank Account</option>
+    </select>
+    <input type="text" id="accountName" placeholder="Account Holder Name" />
+    <input type="text" id="accountNumber" placeholder="Enter Account Number or IBAN" />
+    <button onclick="bindCard()">Bind / Update Card</button>
+    <p id="bindInfo"></p>
+  </div>
+
+  <div class="section">
+    <h3>Withdraw</h3>
+    <input type="number" id="withdrawAmount" placeholder="Enter Amount" />
+    <div class="instructions">
+      <p>1. Withdrawal time is from <strong>9:00 to 17:00</strong>.</p>
+      <p>2. Minimum withdrawal amount is <strong>Rs300</strong>.</p>
+      <p>3. 20% handling fee applies.</p>
+      <p>4. Make sure your bank info is correct.</p>
+      <p>5. Withdrawal allowed only if plan is purchased.</p>
+    </div>
+    <button onclick="submitWithdraw()">Submit Withdraw</button>
+    <p id="error"></p>
+    <p id="success"></p>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+      authDomain: "mercedezbenz79-17037.firebaseapp.com",
+      projectId: "mercedezbenz79-17037"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const MIN_WITHDRAW = 300;
+    let currentUser = null;
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) return window.location.href = "login.html";
+      currentUser = user;
+      const doc = await db.collection("users").doc(user.uid).get();
+      const data = doc.data();
+      document.getElementById("balance").textContent = data.balance || 0;
+      const card = data.bankCard;
+      if (card) {
+        document.getElementById("bindInfo").textContent = `Bound to: ${card.bank} - ${card.accountName} (${card.accountNumber})`;
+      }
+    });
+
+    function bindCard() {
+      const bank = document.getElementById("bankName").value.trim();
+      const accountName = document.getElementById("accountName").value.trim();
+      const accountNumber = document.getElementById("accountNumber").value.trim();
+
+      if (!bank || !accountName || !accountNumber) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      db.collection("users").doc(currentUser.uid).update({
+        bankCard: { bank, accountName, accountNumber }
+      }).then(() => {
+        alert("Bank card updated.");
+        document.getElementById("bindInfo").textContent = `Bound to: ${bank} - ${accountName} (${accountNumber})`;
+      });
+    }
+
+    async function submitWithdraw() {
+      const amount = parseFloat(document.getElementById("withdrawAmount").value);
+      const error = document.getElementById("error");
+      const success = document.getElementById("success");
+      error.textContent = "";
+      success.textContent = "";
+
+      if (!amount || amount < MIN_WITHDRAW) {
+        error.textContent = `Minimum withdraw amount is Rs ${MIN_WITHDRAW}`;
+        return;
+      }
+
+      const userRef = db.collection("users").doc(currentUser.uid);
+      const doc = await userRef.get();
+      const userData = doc.data();
+
+      if (!userData.bankCard) {
+        error.textContent = "Please bind your bank card first.";
+        return;
+      }
+
+      if (userData.balance < amount) {
+        error.textContent = "Insufficient balance.";
+        return;
+      }
+
+      await db.collection("withdrawRequests").add({
+        uid: currentUser.uid,
+        phone: userData.phone,
+        account: userData.bankCard,
+        amount,
+        status: "pending",
+        createdAt: new Date()
+      });
+
+      await userRef.update({
+        balance: firebase.firestore.FieldValue.increment(-amount)
+      });
+
+      success.textContent = "Withdraw request submitted!";
+      document.getElementById("balance").textContent = (userData.balance - amount).toFixed(2);
+    }
+  </script>
+</body>
+</html>

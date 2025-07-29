@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Payment</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      background-color: #111;
+      border: 2px solid #00ffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00ffff;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    input {
+      margin-top: 15px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      width: 100%;
+    }
+
+    .btn {
+      margin-top: 15px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      width: 100%;
+      background-color: #00ffff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #00cccc;
+    }
+
+    .account-info {
+      margin-top: 20px;
+      font-size: 15px;
+      background: #222;
+      padding: 12px;
+      border-radius: 8px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <div class="container">
+    <h2>Enter Transaction ID</h2>
+
+    <div id="accountDetails" class="account-info" style="color: #00ff00; font-weight: bold;"></div>
+
+    <input type="text" id="transactionId" placeholder="Enter Transaction ID" required />
+    <button class="btn" id="submitBtn">Submit</button>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+      authDomain: "mercedezbenz79-17037.firebaseapp.com",
+      projectId: "mercedezbenz79-17037",
+      storageBucket: "mercedezbenz79-17037.appspot.com",
+      messagingSenderId: "328685720441",
+      appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
+      measurementId: "G-G2K4V2LZEW"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const methodRaw = localStorage.getItem("selectedPaymentMethod");
+    const method = methodRaw ? methodRaw.toLowerCase() : null;
+    const planId = localStorage.getItem("selectedPlanId");
+    const accountDetailsDiv = document.getElementById("accountDetails");
+
+    if (method === "easypaisa") {
+      accountDetailsDiv.innerHTML = `
+        <strong>EasyPaisa Account:</strong><br>
+        0332-0217021<br>
+        Name: Asma
+      `;
+    } else if (method === "bank") {
+      accountDetailsDiv.innerHTML = `
+        <strong>Meezan Bank Account:</strong><br>
+        01480111287367<br>
+        Name: Uzair Ahmed
+      `;
+    } else {
+      accountDetailsDiv.innerHTML = `<span style="color:red;">Unknown payment method selected.</span>`;
+    }
+
+    document.getElementById("submitBtn").addEventListener("click", async function () {
+      const transactionId = document.getElementById("transactionId").value.trim();
+      if (!transactionId || !planId || !method) {
+        alert("Missing required fields.");
+        return;
+      }
+
+      firebase.auth().onAuthStateChanged(async function (user) {
+        if (!user) {
+          alert("⚠️ You are not logged in.");
+          return;
+        }
+
+        try {
+          document.getElementById("submitBtn").disabled = true;
+
+          const planDoc = await db.collection("plans").doc(planId).get();
+          const planData = planDoc.data();
+          const planName = planData?.planTitle || planData?.name || "N/A";
+          const amount = planData?.price || planData?.amount || 0;
+
+          const phone = user.phoneNumber ?? localStorage.getItem("Phone") ?? "unknown";
+          const uid = user.uid || "Unknown";
+
+          await db.collection("userPlanRequests").add({
+            userPhone: phone,
+            amount: amount,
+            uid: uid,
+            planName: planName,
+            method: method,
+            transactionId: transactionId,
+            status: "pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          alert("✅ Your order has been submitted successfully!");
+          localStorage.removeItem("selectedPlanId");
+          localStorage.removeItem("selectedPaymentMethod");
+          window.location.href = "more.html";
+        } catch (error) {
+          console.error("Firestore Error:", error);
+          alert("❌ Something went wrong. Please try again.");
+          document.getElementById("submitBtn").disabled = false;
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

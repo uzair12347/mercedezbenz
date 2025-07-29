@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MERCEDEZ-2 Payment</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #111;
+      border: 2px solid #00ffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00ffff;
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    select, button {
+      margin-top: 20px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #00ffff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #00cccc;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 20px;
+      }
+
+      select, button {
+        font-size: 15px;
+        padding: 10px;
+      }
+    }
+  </style>
+
+  <!-- ✅ Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>MERCEDEZ-2 Payment</h2>
+    <p>Amount: Rs. 1000</p>
+
+    <label for="paymentMethod">Select Payment Method:</label>
+    <select id="paymentMethod">
+      <option value="">-- Select Method --</option>
+      <option value="easypaisa">EasyPaisa</option>
+      <option value="bank">Meezan Bank</option>
+    </select>
+
+    <button onclick="proceedToPayment()">Confirm Payment</button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSy***********", // replace with actual value
+      authDomain: "mercedezbenz79-17037.firebaseapp.com",
+      projectId: "mercedezbenz79-17037",
+      storageBucket: "mercedezbenz79-17037.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function proceedToPayment() {
+      const method = document.getElementById("paymentMethod").value;
+      if (!method) {
+        alert("Please select a payment method.");
+        return;
+      }
+
+      localStorage.setItem("selectedPaymentMethod", method);
+      localStorage.setItem("selectedPlanId", "MERCEDEZ-2");
+
+      window.location.href = "payment2.html";
+    }
+  </script>
+</body>
+</html>

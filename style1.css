@@ -1,0 +1,592 @@
+h2{
+    display: flex;
+    justify-content: center;
+    text-align: justify;
+    padding: 30px;
+    color: white;
+    font-size: x-large;
+}
+
+body{
+    background-color: black;
+}
+
+ form{
+   align-items: center;
+   /* padding-left: 400px; */
+   padding-bottom: 20px;
+   border: 2px solid white;
+   border-radius: 10px;
+   background-color: white;
+   color: rgb(0, 0, 0);
+   font-size: x-large;
+ }
+
+ button{
+    padding: 10px;
+    margin-left: 390px;
+    padding-left: 200px;
+    padding-right: 200px;
+     background-color: rgb(22,163,74);
+     font-size: x-large;
+     border-radius: 10px;
+     color: white;
+ }
+
+ #fileInput{
+    padding: 10px;
+    margin-left: 400px;
+    border: 1px solid black;
+    font-size: x-large;
+    display: flex;
+    justify-content: center;
+ }
+
+ h3{
+    display: flex;
+    justify-content: center;
+ }
+
+
+ @media  (max-width:320) and (max-width: 992px) { 
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding-right: 120px;
+       }
+
+       form{
+        align-items: center;
+        padding: 20px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+
+      button{
+        display: flex;
+        justify-content: center;
+        padding: 50px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding-right: 120px;
+       }
+
+       form{
+        align-items: center;
+        padding: 20px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+        padding-right: 20px;
+      }
+
+      button{
+        padding: 10px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+
+@media (min-width: 576px) and (max-width: 767px) {
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding-right: 120px;
+       }
+
+       form{
+        align-items: center;
+        padding: 20px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+
+      button{
+        padding: 10px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+
+@media (max-width: 575px) {
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding-right: 120px;
+       }
+
+       form{
+        align-items: center;
+        padding: 20px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+
+      button{
+        padding: 10px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+@media (min-width:344px) and (max-width:882px) {
+   h2{
+    display: flex;
+    justify-content: center;
+    text-align: justify;
+    padding: 2px;
+    padding-right: 120px;
+   }
+
+   form{
+    align-items: center;
+    padding: 20px;
+   }
+
+   
+   #fileInput{
+    padding: 10px;
+    margin-left: 1px;
+    border: 1px solid black;
+    font-size: larger;
+    display: flex;
+    justify-content: center;
+ }
+
+ form{
+    align-items: center;
+    /* padding-left: 400px; */
+    padding-bottom: 20px;
+    border: 2px solid white;
+    border-radius: 10px;
+    background-color: white;
+    color: rgb(0, 0, 0);
+    font-size: large;
+  }
+
+  button{
+    padding: 10px;
+    margin-left: 50px;
+    padding-left: 100px;
+    padding-right: 100px;
+     background-color: rgb(22,163,74);
+     font-size: x-large;
+     border-radius: 10px;
+     color: white;
+ }
+}
+
+@media (min-width:414px) and (max-width:896px){
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding: 10px;
+        padding-right: 100px;
+        padding-left: 50px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+
+      button{
+        padding: 10px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+@media (min-width:400px) and (max-width:700px){
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding: 10px;
+        padding-right: 100px;
+        padding-left: 50px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+      button{
+        padding: 10px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+@media (min-width:375px) and (max-width:667px){
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding: 10px;
+        padding-right: 100px;
+        padding-left: 50px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+
+      button{
+        padding: 10px;
+        margin-left: 20px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+@media (min-width:360px) and (max-width:740px){
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding: 10px;
+        padding-right: 100px;
+        padding-left: 50px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+
+      button{
+        padding: 10px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+@media (min-width:540px) and (max-width:720px){
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding: 10px;
+        padding-right: 100px;
+        padding-left: 50px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+
+      button{
+        padding: 10px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+@media (min-width:344px) and (max-width:882px){
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding: 10px;
+        padding-right: 100px;
+        padding-left: 50px;
+       }
+
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+
+      button{
+        padding: 10px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+}
+
+@media (min-width:412px) and (max-width:914px){
+    h2{
+        display: flex;
+        justify-content: center;
+        text-align: justify;
+        padding: 10px;
+        padding-right: 100px;
+        padding-left: 50px;
+       }
+
+       
+       #fileInput{
+        padding: 10px;
+        margin-left: 1px;
+        border: 1px solid black;
+        font-size: larger;
+        display: flex;
+        justify-content: center;
+     }
+
+     form{
+        align-items: center;
+        /* padding-left: 400px; */
+        padding-bottom: 20px;
+        border: 2px solid white;
+        border-radius: 10px;
+        background-color: white;
+        color: rgb(0, 0, 0);
+        font-size: large;
+      }
+
+      button{
+        padding: 10px;
+        margin-left: 50px;
+        padding-left: 100px;
+        padding-right: 100px;
+         background-color: rgb(22,163,74);
+         font-size: x-large;
+         border-radius: 10px;
+         color: white;
+     }
+    
+}
+
+
+
+
+
+
+
