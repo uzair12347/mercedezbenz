@@ -169,11 +169,15 @@ button:hover {
 
       <input type="password" id="password" placeholder="Enter password (min 6 chars)" required />
 
+      <input type="text" id="referralCode" placeholder="Referral Code (optional)" />
+
+
       <div class="captcha-group">
         <img id="captchaImage" alt="Captcha" />
         <input type="text" id="captchaInput" placeholder="Enter Captcha" required />
       </div>
-
+   
+      
       <button type="submit">Register</button>
       <p class="login">Already have an account? <a href="login.html">Login</a></p>
     </form>
@@ -209,7 +213,20 @@ button:hover {
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.database();
-  const firestore = firebase.firestore(); // ✅ Initialize Firestore
+  const firestore = firebase.firestore();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCode = urlParams.get("ref");
+  // Autofill referralCode input from localStorage (or URL param)
+
+  if (refCode) {
+    localStorage.setItem("referralCodeFromURL", refCode);
+  }
+
+  const refInput = document.getElementById("referralCode");
+if (refInput && localStorage.getItem("referralCodeFromURL")) {
+  refInput.value = localStorage.getItem("referralCodeFromURL");
+}
 
   function generateCaptchaText(length = 5) {
     const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -230,6 +247,12 @@ button:hover {
     const mobile = document.getElementById("mobile").value.trim();
     const password = document.getElementById("password").value.trim();
     const captchaInput = document.getElementById("captchaInput").value.trim();
+   let referralCodeInput = localStorage.getItem("referralCodeFromURL");
+    if (!referralCodeInput) {
+    referralCodeInput = document.getElementById("referralCode")?.value.trim();
+}
+
+
 
     if (!/^\d{10}$/.test(mobile)) {
       alert("Please enter a valid 10-digit mobile number.");
@@ -254,22 +277,37 @@ button:hover {
     try {
       const userCredential = await auth.createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
+      const phone = "+92" + mobile;
 
       // ✅ Save to Realtime Database
       await db.ref("users/" + user.uid).set({
-        mobile: "+92" + mobile,
+        mobile: phone,
         registeredAt: new Date().toISOString()
       });
 
-      // ✅ Save to Firestore (for team.html)
-      const urlParams = new URLSearchParams(window.location.search);
-      const invitedBy = urlParams.get("ref") || null;
+      // 🔍 Check referral code if provided
+      let invitedBy = null;
+      if (referralCodeInput) {
+        const querySnapshot = await firestore
+          .collection("users")
+          .where("referralCode", "==", referralCodeInput)
+          .get();
 
+        if (!querySnapshot.empty) {
+          invitedBy = querySnapshot.docs[0].id;
+        }
+      }
+
+      console.log("📌 Using referralCodeInput:", referralCodeInput);
+console.log("📌 invitedBy UID:", invitedBy);
+
+      // ✅ Save to Firestore
       await firestore.collection("users").doc(user.uid).set({
-        phone: "+92" + mobile,
+        phone: phone,
         referralCode: user.uid.slice(-6),
         invitedBy: invitedBy,
         totalCommission: 0,
+         accountBalance: 0,
         createdAt: new Date().toISOString()
       });
 
@@ -285,6 +323,7 @@ button:hover {
     }
   });
 </script>
+
 
 </body>
 </html>
