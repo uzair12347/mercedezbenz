@@ -166,16 +166,7 @@
     return;
   }
 
-      try {
-        await db.collection("userPlanRequests").add({
-          transactionId,
-          method,
-          planId,
-          status: "pending",
-          userId: currentUser.uid,
-          createdAt: firebase.firestore.Timestamp.now()
-        });
-
+     
         let planTitle = "Unknown Plan";
     let price = 0;
     let dailyIncome = 0;
@@ -187,6 +178,19 @@
       price = planData.price || 0;
       dailyIncome = planData.dailyIncome || 0;
     }
+
+     try {
+        await db.collection("userPlanRequests").add({
+          transactionId,
+          method,
+          planId,
+          price,        
+          dailyIncome,   
+          status: "pending",
+          userId: currentUser.uid,
+          createdAt: firebase.firestore.Timestamp.now()
+        });
+
 
     const boughtPlan = {
       title: planTitle,
