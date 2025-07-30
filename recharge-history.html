@@ -87,65 +87,90 @@
   </div>
 
   <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
-      authDomain: "mercedezbenz79-17037.firebaseapp.com",
-      projectId: "mercedezbenz79-17037",
-      storageBucket: "mercedezbenz79-17037.appspot.com",
-      messagingSenderId: "328685720441",
-      appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
-      measurementId: "G-G2K4V2LZEW"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+    authDomain: "mercedezbenz79-17037.firebaseapp.com",
+    projectId: "mercedezbenz79-17037",
+    storageBucket: "mercedezbenz79-17037.appspot.com",
+    messagingSenderId: "328685720441",
+    appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
+    measurementId: "G-G2K4V2LZEW"
+  };
 
-    // Init Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
 
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        alert("Please login to view recharge history.");
-        window.location.href = "login.html";
-        return;
-      }
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      alert("Please login to view recharge history.");
+      window.location.href = "login.html";
+      return;
+    }
 
-      const uid = user.uid;
-      const tableBody = document.getElementById("tableBody");
+    const uid = user.uid;
+    const tableBody = document.getElementById("tableBody");
 
-      try {
-        const snapshot = await db
-          .collection("userPlanRequests")
-          .where("uid", "==", uid)
-          .orderBy("createdAt", "desc")
-          .get();
+    try {
+      const approvedSnap = await db
+        .collection("approvedPlans")
+        .where("uid", "==", uid)
+        .get();
 
-        tableBody.innerHTML = "";
+      const pendingSnap = await db
+        .collection("userPlanRequests")
+        .where("uid", "==", uid)
+        .get();
 
-        if (snapshot.empty) {
-          const row = tableBody.insertRow();
-          const cell = row.insertCell();
-          cell.colSpan = 3;
-          cell.innerText = "No recharge history found.";
-          return;
-        }
+      const plans = [];
 
-        snapshot.forEach(doc => {
-          const r = doc.data();
-          const row = tableBody.insertRow();
-
-          row.insertCell().innerText = "Rs. " + (r.amount || "N/A");
-          row.insertCell().innerText = (r.status || "pending").toUpperCase();
-          row.insertCell().innerText = r.createdAt?.toDate?.().toLocaleString() || "N/A";
+      approvedSnap.forEach(doc => {
+        const data = doc.data();
+        plans.push({
+          amount: data.amount || "N/A",
+          status: "APPROVED",
+          date: data.createdAt?.toDate?.().toLocaleString() || "N/A"
         });
-      } catch (err) {
-        console.error("Error fetching history:", err);
+      });
+
+      pendingSnap.forEach(doc => {
+        const data = doc.data();
+        plans.push({
+          amount: data.amount || "N/A",
+          status: (data.status || "PENDING").toUpperCase(),
+          date: data.createdAt?.toDate?.().toLocaleString() || "N/A"
+        });
+      });
+
+      tableBody.innerHTML = "";
+
+      if (plans.length === 0) {
         const row = tableBody.insertRow();
         const cell = row.insertCell();
         cell.colSpan = 3;
-        cell.innerText = "Error loading recharge history.";
+        cell.innerText = "No recharge history found.";
+        return;
       }
-    });
-  </script>
+
+      // Sort by latest date first
+      plans.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      plans.forEach(plan => {
+        const row = tableBody.insertRow();
+        row.insertCell().innerText = "Rs. " + plan.amount;
+        row.insertCell().innerText = plan.status;
+        row.insertCell().innerText = plan.date;
+      });
+
+    } catch (err) {
+      console.error("Error fetching history:", err);
+      const row = tableBody.insertRow();
+      const cell = row.insertCell();
+      cell.colSpan = 3;
+      cell.innerText = "Error loading recharge history.";
+    }
+  });
+</script>
+
 </body>
 </html>
