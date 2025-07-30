@@ -83,6 +83,7 @@
   </style>
 </head>
 <body>
+  <div id="earningPlans"></div>
   <div id="earning-container"></div>
   <div class="container">
     <h1>Your Earnings</h1>
@@ -125,8 +126,8 @@
     const phone = user.phoneNumber ?? localStorage.getItem("userPhone") ?? "unknown";
 
     try {
-      const querySnapshot = await db.collection("userPlanRequests")
-        .where("uid", "==", uid)
+      const querySnapshot = await db.collection("approvedPlans")
+        .where("userId", "==", uid)
           .where("status", "==", "approved")
         .get();
 
@@ -146,7 +147,7 @@
         const nextEarningAt = plan.nextEarningAt?.toDate?.() || new Date(0);
         const completedDays = plan.completedDays || 0;
 
-        const duration = plan.duration || 60;
+        const duration = plan.planDurationInDays || 60;
         const dailyIncome = plan.dailyIncome || 0;
 
         // ✅ Initialize missing nextEarningAt
@@ -178,7 +179,7 @@
 
         const planCard = `
           <div class="plan-card" style="border:1px solid #0ff; padding:15px; margin:10px; border-radius:10px;">
-            <h3>${plan.planName || "Unnamed Plan"}</h3>
+            <h3>${plan.planName || plan.title || "Unnamed Plan"}</h3>
             <p>Daily Income: Rs ${dailyIncome}</p>
             <p>Days Completed: ${completedDays} / ${duration}</p>
             <p>Next Earning: ${plan.nextEarningAt?.toDate?.().toLocaleString() || "N/A"}</p>
