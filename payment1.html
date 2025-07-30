@@ -132,6 +132,7 @@
 
   document.getElementById("submitBtn").addEventListener("click", async function () {
     const transactionId = document.getElementById("transactionId").value.trim();
+    
     if (!transactionId || !planId || !method) {
       alert("Missing required fields.");
       return;
@@ -148,6 +149,7 @@
 
         let planName = planNameFromLS;
         let amount = amountFromLS;
+        let dailyIncome = 0;
 
         // Try to get from Firestore if exists
         const planDoc = await db.collection("plans").doc(planId).get();
@@ -155,6 +157,7 @@
           const planData = planDoc.data();
           planName = planData?.planTitle || planData?.name || planName;
           amount = planData?.price || planData?.amount || amount;
+          dailyIncome = planData?.dailyIncome || 0;
         }
 
         const phone = user.phoneNumber ?? localStorage.getItem("Phone") ?? "unknown";
@@ -164,14 +167,18 @@
           userPhone: phone,
           amount: amount,
           uid: uid,
+          planId: planId,
           planName: planName,
           method: method,
           transactionId: transactionId,
-          status: "pending",
+          status: "approved", // ✅ auto approved
+          approvedAt: firebase.firestore.FieldValue.serverTimestamp(), // 🕒 earning start time
+          planDurationInDays: 60,
+          dailyIncome: dailyIncome,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
+        alert("✅ Plan Activated!\nYour earnings will start immediately.");
         localStorage.removeItem("selectedPlanId");
         localStorage.removeItem("selectedPlanName");
         localStorage.removeItem("selectedPlanAmount");
