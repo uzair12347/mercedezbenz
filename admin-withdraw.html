@@ -2,6 +2,9 @@
 <html>
 <head>
   <title>Withdraw Requests (Admin)</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <style>
     body {
       font-family: sans-serif;
@@ -34,110 +37,88 @@
       justify-content: space-between;
       align-items: center;
     }
-    .logout-btn {
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      font-size: 14px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .logout-btn:hover {
-      background-color: #c0392b;
-    }
   </style>
 </head>
 <body>
   <div class="top-bar">
     <h2>Withdraw Requests</h2>
-    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 
-  <div id="withdrawRequestsContainer"></div>
+  <div id="withdrawRequestsContainer">Loading...</div>
 
-  <script>
-    const token = localStorage.getItem("token");
-    const container = document.getElementById("withdrawRequestsContainer");
+ <script>
+  // 🔧 Your Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+    authDomain: "mercedezbenz79-17037.firebaseapp.com",
+    databaseURL: "https://mercedezbenz79-17037-default-rtdb.firebaseio.com",
+    projectId: "mercedezbenz79-17037",
+    storageBucket: "mercedezbenz79-17037.firebasestorage.app",
+    messagingSenderId: "328685720441",
+    appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
+    measurementId: "G-G2K4V2LZEW"
+  };
 
-    if (!token) {
-      alert("Please login first.");
-      window.location.href = "login.html";
-    }
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const container = document.getElementById("withdrawRequestsContainer");
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "login.html";
-    }
-
-    async function fetchWithdrawRequests() {
-      try {
-        const res = await fetch("http://localhost:5000/api/withdraw", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to load requests");
-        }
-
-        renderRequests(data);
-      } catch (err) {
-        alert("Error loading requests: " + err.message);
-      }
-    }
-
-    function renderRequests(requests) {
+  // 🔃 Load Withdraw Requests
+  function fetchWithdrawRequests() {
+    db.collection("withdrawRequests").get().then((querySnapshot) => {
       container.innerHTML = "";
-
-      if (requests.length === 0) {
+      if (querySnapshot.empty) {
         container.innerHTML = "<p>No pending withdraw requests.</p>";
         return;
       }
 
-      requests.forEach((req) => {
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
         const div = document.createElement("div");
         div.className = "request";
         div.innerHTML = `
-          <p><strong>User:</strong> ${req.user?.phone || "Unknown"}</p>
-          <p><strong>Amount:</strong> Rs ${req.amount}</p>
-          <p><strong>Method:</strong> ${req.method}</p>
-          <p><strong>Status:</strong> ${req.status}</p>
-          <button onclick="approveRequest('${req._id}')">✅ Approve</button>
+          <p><strong>User:</strong> ${data.phone || "Unknown"}</p>
+          <p><strong>Amount:</strong> Rs ${data.amount}</p>
+          <p><strong>Method:</strong> ${data.method}</p>
+          <p><strong>Status:</strong> ${data.status}</p>
+          ${data.status !== "approved" && data.status !== "rejected" ? `
+            <button onclick="approveRequest('${doc.id}')">✅ Approve</button>
+            <button onclick="rejectRequest('${doc.id}')">❌ Reject</button>
+          ` : ""}
         `;
         container.appendChild(div);
       });
-    }
+    }).catch((error) => {
+      container.innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
+    });
+  }
 
-    async function approveRequest(id) {
-      try {
-        const res = await fetch(`http://localhost:5000/api/withdraw/update-status/${id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status: "approved" }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to approve request");
-        }
-
-        alert("✅ Withdraw approved!");
+  // ✅ Approve Request
+  function approveRequest(id) {
+    db.collection("withdrawRequests").doc(id).update({ status: "approved" })
+      .then(() => {
+        alert("✅ Withdraw request approved!");
         fetchWithdrawRequests();
-      } catch (err) {
-        alert("Error approving request: " + err.message);
-      }
-    }
+      })
+      .catch((error) => {
+        alert("Error approving request: " + error.message);
+      });
+  }
 
-    fetchWithdrawRequests();
-  </script>
+  // ❌ Reject Request
+  function rejectRequest(id) {
+    db.collection("withdrawRequests").doc(id).update({ status: "rejected" })
+      .then(() => {
+        alert("❌ Withdraw request rejected!");
+        fetchWithdrawRequests();
+      })
+      .catch((error) => {
+        alert("Error rejecting request: " + error.message);
+      });
+  }
+
+  fetchWithdrawRequests();
+</script>
+
 </body>
 </html>
