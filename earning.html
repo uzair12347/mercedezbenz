@@ -5,8 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Earnings</title>
 
-  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore-compat.js"></script>
+ <!-- Firebase App (core) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+
+<!-- Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
 
   <style>
     body {
@@ -90,60 +97,105 @@
   </div>
 
 <script>
-  // Firebase config
   const firebaseConfig = {
-    apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2ZIjzVYr2c",
-    authDomain: "mercedezbenz-3526e.firebaseapp.com",
-    projectId: "mercedezbenz-3526e",
-    storageBucket: "mercedezbenz-3526e.appspot.com",
-    messagingSenderId: "1096954696719",
-    appId: "1:1096954696719:web:7e1c5e6bb3498009a17a4e",
-    measurementId: "G-VSKX86E99X"
+    apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+    authDomain: "mercedezbenz79-17037.firebaseapp.com",
+    databaseURL: "https://mercedezbenz79-17037-default-rtdb.firebaseio.com",
+    projectId: "mercedezbenz79-17037",
+    storageBucket: "mercedezbenz79-17037.appspot.com",
+    messagingSenderId: "328685720441",
+    appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
+    measurementId: "G-G2K4V2LZEW"
   };
 
-  // Initialize Firebase app and Firestore only (no firebase.auth needed here)
-  const app = firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
   const earningContainer = document.getElementById("earning-container");
   earningContainer.innerHTML = "Loading...";
 
-  // Check if phone is stored in localStorage (means user logged in via your custom system)
-  const phone = localStorage.getItem("userPhone");
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) {
+      alert("User not logged in");
+      window.location.href = "login.html";
+      return;
+    }
 
-  if (!phone) {
-    alert("User not logged in");
-    window.location.href = "login.html"; // redirect to your login page
-  } else {
-    // Fetch approved plans for this phone number from Firestore
-    db.collection("approvedPlans")
-      .where("userPhone", "==", phone)
-      .get()
-      .then((querySnapshot) => {
-        if (querySnapshot.empty) {
-          earningContainer.innerHTML = "No active plans found.";
-          return;
+    const uid = user.uid;
+    const phone = user.phoneNumber ?? localStorage.getItem("userPhone") ?? "unknown";
+
+    try {
+      const querySnapshot = await db.collection("userPlanRequests")
+        .where("uid", "==", uid)
+          .where("status", "==", "approved")
+        .get();
+
+      if (querySnapshot.empty) {
+        earningContainer.innerHTML = "No active plans found.";
+        return;
+      }
+
+      let totalEarningsToday = 0;
+      earningContainer.innerHTML = "";
+
+      for (const doc of querySnapshot.docs) {
+        const plan = doc.data();
+        const planRef = db.collection("userPlanRequests").doc(doc.id);
+
+        const now = new Date();
+        const nextEarningAt = plan.nextEarningAt?.toDate?.() || new Date(0);
+        const completedDays = plan.completedDays || 0;
+
+        const duration = plan.duration || 60;
+        const dailyIncome = plan.dailyIncome || 0;
+
+        // ✅ Initialize missing nextEarningAt
+        if (!plan.nextEarningAt) {
+          await planRef.update({
+            nextEarningAt: firebase.firestore.Timestamp.fromDate(new Date(now.getTime() + 86400000))
+          });
         }
 
-        earningContainer.innerHTML = ""; // clear loading
+        if (now >= nextEarningAt && completedDays < duration) {
+          const userSnap = await db.collection("users").where("phone", "==", phone).limit(1).get();
+          if (!userSnap.empty) {
+            const userDoc = userSnap.docs[0];
+            const userRef = db.collection("users").doc(userDoc.id);
+            const currentBalance = userDoc.data().balance || 0;
 
-        querySnapshot.forEach((doc) => {
-          const plan = doc.data();
-          const planCard = `
-            <div class="plan-card">
-              <h3>${plan.planName}</h3>
-              <p>Daily Income: Rs ${plan.dailyIncome}</p>
-              <p>Start Date: ${plan.startDate || "N/A"}</p>
-            </div>
-          `;
-          earningContainer.innerHTML += planCard;
-        });
-      })
-      .catch((error) => {
-        console.error("Error fetching plans:", error);
-        earningContainer.innerHTML = "Failed to load plans.";
-      });
-  }
+            await userRef.update({
+              balance: currentBalance + dailyIncome
+            });
+
+            await planRef.update({
+              nextEarningAt: firebase.firestore.Timestamp.fromDate(new Date(now.getTime() + 86400000)),
+              completedDays: completedDays + 1
+            });
+
+            totalEarningsToday += dailyIncome;
+          }
+        }
+
+        const planCard = `
+          <div class="plan-card" style="border:1px solid #0ff; padding:15px; margin:10px; border-radius:10px;">
+            <h3>${plan.planName || "Unnamed Plan"}</h3>
+            <p>Daily Income: Rs ${dailyIncome}</p>
+            <p>Days Completed: ${completedDays} / ${duration}</p>
+            <p>Next Earning: ${plan.nextEarningAt?.toDate?.().toLocaleString() || "N/A"}</p>
+          </div>
+        `;
+        earningContainer.innerHTML += planCard;
+      }
+
+      document.getElementById("earning").textContent = `Rs ${totalEarningsToday}`;
+    } catch (error) {
+      console.error("Error fetching plans:", error);
+      earningContainer.innerHTML = "Failed to load plans.";
+    }
+  });
 </script>
+
+
+
 </body>
 </html>
