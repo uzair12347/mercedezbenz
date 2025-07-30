@@ -92,8 +92,10 @@
   </style>
 
   <!-- ✅ Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
 </head>
 <body>
   <div class="container">
@@ -105,6 +107,9 @@
   </div>
 
   <script>
+
+    let currentUser = null;
+
     // ✅ Firebase Init
     const firebaseConfig = {
       apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
@@ -124,9 +129,9 @@
 
     if (method === "easypaisa") {
       accountDetailsDiv.innerHTML = `
-        <strong>EasyPaisa Account:</strong><br>
+        <strong>SadaPay Account:</strong><br>
         0332-0217021<br>
-        Name: Asma
+        Name: Uzair
       `;
     } else if (method === "bank") {
       accountDetailsDiv.innerHTML = `
@@ -138,6 +143,16 @@
       accountDetailsDiv.innerHTML = `<span style="color:red;">Unknown payment method selected.</span>`;
     }
 
+    firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    currentUser = user;
+  } else {
+    alert("Please login first.");
+    window.location.href = "login.html";
+  }
+});
+
+
     async function submitDetails() {
       const transactionId = document.getElementById("transactionId").value.trim();
 
@@ -146,14 +161,43 @@
         return;
       }
 
+       if (!currentUser) {
+    alert("User not logged in.");
+    return;
+  }
+
       try {
         await db.collection("userPlanRequests").add({
           transactionId,
           method,
           planId,
           status: "pending",
+          userId: currentUser.uid,
           createdAt: firebase.firestore.Timestamp.now()
         });
+
+        let planTitle = "Unknown Plan";
+    let price = 0;
+    let dailyIncome = 0;
+
+    const planDoc = await db.collection("plans").doc(planId).get();
+    if (planDoc.exists) {
+      const planData = planDoc.data();
+      planTitle = planData.planTitle || planData.title || "Plan";
+      price = planData.price || 0;
+      dailyIncome = planData.dailyIncome || 0;
+    }
+
+    const boughtPlan = {
+      title: planTitle,
+      price: price,
+      dailyIncome: dailyIncome,
+      date: new Date().toISOString()
+    };
+
+    let existingPlans = JSON.parse(localStorage.getItem("myPlans")) || [];
+    existingPlans.push(boughtPlan);
+    localStorage.setItem("myPlans", JSON.stringify(existingPlans));
 
         alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
         localStorage.removeItem("selectedPlanId");
