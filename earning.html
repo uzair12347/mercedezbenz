@@ -126,7 +126,7 @@
     const phone = user.phoneNumber ?? localStorage.getItem("userPhone") ?? "unknown";
 
     try {
-      const querySnapshot = await db.collection("approvedPlans")
+      const querySnapshot = await db.collection("userPlanRequests")
         .where("userId", "==", uid)
           .where("status", "==", "approved")
         .get();
