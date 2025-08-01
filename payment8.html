@@ -8,6 +8,8 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
 
   <style>
     * {
@@ -133,31 +135,72 @@
     }
 
     // ✅ Submit data
-    async function submitDetails() {
-      const transactionId = document.getElementById("transactionId").value.trim();
+   async function submitDetails() {
+  const transactionId = document.getElementById('transactionId').value.trim();
+  const method = localStorage.getItem('selectedPaymentMethod');
+  const planId = localStorage.getItem('selectedPlanId');
 
-      if (!transactionId || !method || !planId) {
-        return alert("Please fill all fields and ensure plan is selected.");
-      }
+  if (!transactionId || !method || !planId) {
+    alert("All fields are required.");
+    return;
+  }
 
-      try {
-        await db.collection("userPlanRequests").add({
-          transactionId: transactionId,
-          paymentMethod: method,
-          planId: planId,
-          status: "pending",
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+  try {
+    // Step 1: Submit the order
+    await db.collection('userPlanRequests').add({
+      planId,
+      method,
+      transactionId,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
 
-        alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
-        localStorage.removeItem("selectedPlanId");
-        localStorage.removeItem("selectedPaymentMethod");
-        window.location.href = "more.html";
-      } catch (error) {
-        console.error("Error submitting to Firestore:", error);
-        alert("Error submitting payment. Try again.");
+    // Step 2: Get current user
+    const currentUser = firebase.auth().currentUser;
+    if (!currentUser) {
+      alert("User not logged in.");
+      return;
+    }
+
+    const userRef = db.collection("users").doc(currentUser.uid);
+    const userDoc = await userRef.get();
+
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const invitedByCode = userData.invitedBy;
+
+      if (invitedByCode) {
+        // Step 3: Find inviter by referralCode
+        const inviterSnap = await db.collection("users")
+          .where("referralCode", "==", invitedByCode)
+          .limit(1)
+          .get();
+
+        if (!inviterSnap.empty) {
+          const inviterDoc = inviterSnap.docs[0];
+          const inviterRef = db.collection("users").doc(inviterDoc.id);
+
+          // Step 4: Unlock withdraw for inviter
+          await inviterRef.update({
+            withdrawUnlocked: true
+          });
+
+          console.log("✅ Withdraw unlocked for inviter.");
+        }
       }
     }
-  </script>
+
+    // Step 5: Clean up and redirect
+    alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
+    localStorage.removeItem("selectedPlanId");
+    localStorage.removeItem("selectedPaymentMethod");
+    window.location.href = "more.html";
+
+  } catch (error) {
+    console.error("Error submitting:", error);
+    alert("Error submitting payment. Try again.");
+  }
+}
+
+</script>
 </body>
 </html>
