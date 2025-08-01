@@ -113,8 +113,8 @@
     <h3>Withdraw</h3>
     <input type="number" id="withdrawAmount" placeholder="Enter Amount" />
     <div class="instructions">
-      <p>1. Withdrawal time is from <strong>9:00 to 17:00</strong>.</p>
-      <p>2. Minimum withdrawal amount is <strong>Rs300</strong>.</p>
+      <p>1. Withdrawal time is from <strong>9:00 to 17:00</strong>.You can only 2 withdraw  per day</p>
+      <p>2. Minimum withdrawal amount is <strong>Rs300</strong>.you</p>
       <p>3. 20% handling fee applies.</p>
       <p>4. Make sure your bank info is correct.</p>
       <p>5. Withdrawal allowed only if plan is purchased.</p>
@@ -146,7 +146,7 @@
     auth.onAuthStateChanged(async (user) => {
       if (!user) return window.location.href = "login.html";
       currentUser = user;
-      const doc = await db.collection("users").doc(user.uid).get();
+  db.collection("users").doc(user.uid).onSnapshot((doc) => {
       const data = doc.data();
       document.getElementById("balance").textContent = data.balance || 0;
       const card = data.bankCard;
@@ -154,6 +154,7 @@
         document.getElementById("bindInfo").textContent = `Bound to: ${card.bank} - ${card.accountName} (${card.accountNumber})`;
       }
     });
+  });
 
     function bindCard() {
       const bank = document.getElementById("bankName").value.trim();
@@ -180,6 +181,13 @@
       error.textContent = "";
       success.textContent = "";
 
+       const now = new Date();
+  const hour = now.getHours();
+  if (hour < 9 || hour >= 17) {
+    error.textContent = "Withdraw timing is from 9:00 to 17:00.";
+    return;
+  }
+
       if (!amount || amount < MIN_WITHDRAW) {
         error.textContent = `Minimum withdraw amount is Rs ${MIN_WITHDRAW}`;
         return;
@@ -188,6 +196,41 @@
       const userRef = db.collection("users").doc(currentUser.uid);
       const doc = await userRef.get();
       const userData = doc.data();
+// 🔍 Pehle check karo ke user ka yeh pehla withdraw hai ya nahi
+const previousWithdraws = await db.collection("withdrawRequests")
+  .where("uid", "==", currentUser.uid)
+  .get();
+
+const isFirstWithdraw = previousWithdraws.empty;
+
+if (isFirstWithdraw) {
+  // 🔁 Ab check karo kya kisi invite kiye gaye member ne recharge (plan) approve karwaya hai
+  const teamSnap = await db.collection("users")
+    .where("invitedBy", "==", currentUser.uid)
+    .get();
+
+  let hasRecharge = false;
+
+  for (const teammate of teamSnap.docs) {
+    const teammateId = teammate.id;
+
+    const plansSnap = await db.collection("userPlanRequests")
+      .where("uid", "==", teammateId)
+      .where("status", "==", "approved")
+      .get();
+
+    if (!plansSnap.empty) {
+      hasRecharge = true;
+      break;
+    }
+  }
+
+  if (!hasRecharge) {
+    error.textContent = "Please invite at least one member who completes a recharge before your first withdrawal can be processed۔";
+    return;
+  }
+}
+
 
       if (!userData.bankCard) {
         error.textContent = "Please bind your bank card first.";
@@ -198,6 +241,22 @@
         error.textContent = "Insufficient balance.";
         return;
       }
+
+       const today = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
+  const startOfDay = new Date(today + "T00:00:00");
+  const endOfDay = new Date(today + "T23:59:59");
+
+  const snapshot = await db.collection("withdrawRequests")
+    .where("uid", "==", currentUser.uid)
+    .where("createdAt", ">=", startOfDay)
+    .where("createdAt", "<=", endOfDay)
+    .get();
+
+  if (snapshot.size >= 2) {
+    error.textContent = "You can only request withdraw 2 times per day.";
+    return;
+  }
+
 
       await db.collection("withdrawRequests").add({
         uid: currentUser.uid,
