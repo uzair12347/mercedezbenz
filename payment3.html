@@ -142,14 +142,50 @@
         return alert("Please enter Transaction ID and ensure plan/method is selected.");
       }
 
-      try {
+       try {
+    // 🔍 Plan ka price fetch karo
+    const planDoc = await db.collection("plans").doc(planId).get();
+    let planPrice = 0;
+    if (planDoc.exists) {
+      const planData = planDoc.data();
+      planPrice = planData.price || 0;
+    }
+  
         await db.collection("userPlanRequests").add({
           planId: planId,
           transactionId: transactionId,
           method: method,
+         price: planPrice,  
           status: "pending",
           createdAt: new Date().toISOString()
         });
+
+          const currentUser = firebase.auth().currentUser;
+    if (currentUser) {
+      const userRef = db.collection("users").doc(currentUser.uid);
+      const userSnap = await userRef.get();
+
+      if (userSnap.exists) {
+        const userData = userSnap.data();
+
+        if (userData?.invitedBy) {
+          const inviterQuery = await db.collection("users")
+            .where("referralCode", "==", userData.invitedBy)
+            .limit(1)
+            .get();
+
+          if (!inviterQuery.empty) {
+            const inviterDoc = inviterQuery.docs[0];
+            const inviterRef = inviterDoc.ref;
+            const inviterData = inviterDoc.data();
+
+            if (!inviterData.withdrawUnlocked) {
+              await inviterRef.update({ withdrawUnlocked: true });
+            }
+          }
+        }
+      }
+    }
 
         alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
         localStorage.removeItem("selectedPlanId");
