@@ -80,72 +80,125 @@
   </style>
 
   <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    Timestamp,
+    getDocs,
+    query,
+    where,
+    limit,
+    doc,
+    updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import {
+    getAuth,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
-      authDomain: "mercedezbenz79-17037.firebaseapp.com",
-      databaseURL: "https://mercedezbenz79-17037-default-rtdb.firebaseio.com",
-      projectId: "mercedezbenz79-17037",
-      storageBucket: "mercedezbenz79-17037.firebasestorage.app",
-      messagingSenderId: "328685720441",
-      appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
-      measurementId: "G-G2K4V2LZEW"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUiCellYmyU-a6ZCh0jo7O2UUe8GAV7s0",
+    authDomain: "mercedezbenz79-17037.firebaseapp.com",
+    databaseURL: "https://mercedezbenz79-17037-default-rtdb.firebaseio.com",
+    projectId: "mercedezbenz79-17037",
+    storageBucket: "mercedezbenz79-17037.firebasestorage.app",
+    messagingSenderId: "328685720441",
+    appId: "1:328685720441:web:ae850d085363ee4a1b55a8",
+    measurementId: "G-G2K4V2LZEW"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-    const methodRaw = localStorage.getItem("selectedPaymentMethod");
-    const method = methodRaw ? methodRaw.toLowerCase() : null;
-    const planId = localStorage.getItem("selectedPlanId");
+  const methodRaw = localStorage.getItem("selectedPaymentMethod");
+  const method = methodRaw ? methodRaw.toLowerCase() : null;
+  const planId = localStorage.getItem("selectedPlanId");
 
-    const accountDetailsDiv = document.getElementById("accountDetails");
-    if (method === "easypaisa") {
-      accountDetailsDiv.innerHTML = `
-        <strong>SadaPay Account:</strong><br>
-        03320217021<br>
-        Name: Uzair
-      `;
-    } else if (method === "bank") {
-      accountDetailsDiv.innerHTML = `
-        <strong>Meezan Bank Account:</strong><br>
-        01480111287367<br>
-        Name: Uzair Ahmed
-      `;
-    } else {
-      accountDetailsDiv.innerHTML = `<span style="color:red;">Unknown payment method selected.</span>`;
+  const accountDetailsDiv = document.getElementById("accountDetails");
+  if (method === "easypaisa") {
+    accountDetailsDiv.innerHTML = `
+      <strong>SadaPay Account:</strong><br>
+      03320217021<br>
+      Name: Uzair
+    `;
+  } else if (method === "bank") {
+    accountDetailsDiv.innerHTML = `
+      <strong>Meezan Bank Account:</strong><br>
+      01480111287367<br>
+      Name: Uzair Ahmed
+    `;
+  } else {
+    accountDetailsDiv.innerHTML = `<span style="color:red;">Unknown payment method selected.</span>`;
+  }
+
+  window.submitDetails = async function () {
+    const transactionId = document.getElementById("transactionId").value.trim();
+
+    if (!transactionId || !method || !planId) {
+      alert("Please fill all fields.");
+      return;
     }
 
-    window.submitDetails = async function () {
-      const transactionId = document.getElementById("transactionId").value.trim();
+    const user = auth.currentUser;
 
-      if (!transactionId || !method || !planId) {
-        alert("Please fill all fields.");
-        return;
+    if (!user) {
+      alert("User not logged in.");
+      return;
+    }
+
+    try {
+      // Step 1: Add recharge request
+      await addDoc(collection(db, "userPlanRequests"), {
+        uid: user.uid,
+        transactionId: transactionId,
+        planId: planId,
+        paymentMethod: method,
+        status: "pending",
+        timestamp: Timestamp.now()
+      });
+
+      // Step 2: Check who invited this user
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("uid", "==", user.uid), limit(1));
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        const userDoc = snapshot.docs[0];
+        const invitedBy = userDoc.data().invitedBy;
+
+        if (invitedBy) {
+          const inviterQuery = query(usersRef, where("referralCode", "==", invitedBy), limit(1));
+          const inviterSnap = await getDocs(inviterQuery);
+
+          if (!inviterSnap.empty) {
+            const inviterDoc = inviterSnap.docs[0];
+            const inviterRef = doc(db, "users", inviterDoc.id);
+
+            await updateDoc(inviterRef, {
+              withdrawUnlocked: true
+            });
+
+            console.log("✅ Inviter's withdrawUnlocked set to true.");
+          }
+        }
       }
 
-      try {
-        await addDoc(collection(db, "userPlanRequests"), {
-          transactionId: transactionId,
-          planId: planId,
-          paymentMethod: method,
-          status: "pending",
-          timestamp: Timestamp.now()
-        });
+      alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
+      localStorage.removeItem("selectedPlanId");
+      localStorage.removeItem("selectedPaymentMethod");
+      window.location.href = "more.html";
 
-        alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
-        localStorage.removeItem("selectedPlanId");
-        localStorage.removeItem("selectedPaymentMethod");
-        window.location.href = "more.html";
-      } catch (error) {
-        console.error("Error submitting payment:", error);
-        alert("Failed to submit. Try again.");
-      }
-    };
-  </script>
+    } catch (error) {
+      console.error("Error submitting payment:", error);
+      alert("Failed to submit. Try again.");
+    }
+  };
+</script>
+
 </head>
 
 <body>
