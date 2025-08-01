@@ -136,6 +136,26 @@
           createdAt: serverTimestamp(),
         });
 
+        // Recharge data submit hone ke baad
+const invitedBy = userData.invitedBy;
+
+if (invitedBy) {
+  const inviterQuery = query(collection(db, "users"), where("referralCode", "==", invitedBy), limit(1));
+  const inviterSnapshot = await getDocs(inviterQuery);
+
+  if (!inviterSnapshot.empty) {
+    const inviterDoc = inviterSnapshot.docs[0];
+    const inviterRef = doc(db, "users", inviterDoc.id);
+    
+    await updateDoc(inviterRef, {
+      withdrawUnlocked: true
+    });
+
+    console.log("Inviter's withdraw unlocked.");
+  }
+}
+
+
         alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
 
         localStorage.removeItem("selectedPlanId");
