@@ -191,6 +191,31 @@
           createdAt: firebase.firestore.Timestamp.now()
         });
 
+        // 🔓 Unlock inviter's withdraw if applicable
+const userRef = db.collection("users").doc(currentUser.uid);
+const userSnap = await userRef.get();
+
+if (userSnap.exists) {
+  const userData = userSnap.data();
+
+  if (userData?.invitedBy) {
+    const inviterQuery = await db.collection("users")
+      .where("referralCode", "==", userData.invitedBy)
+      .limit(1)
+      .get();
+
+    if (!inviterQuery.empty) {
+      const inviterDoc = inviterQuery.docs[0];
+      const inviterRef = inviterDoc.ref;
+      const inviterData = inviterDoc.data();
+
+      if (!inviterData.withdrawUnlocked) {
+        await inviterRef.update({ withdrawUnlocked: true });
+      }
+    }
+  }
+}
+
 
     const boughtPlan = {
       title: planTitle,
