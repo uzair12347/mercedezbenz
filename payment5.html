@@ -86,6 +86,8 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
 </head>
 <body>
   <div class="container">
@@ -150,6 +152,36 @@
           status: "pending",
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
+
+         const auth = firebase.auth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const userRef = db.collection("users").doc(user.uid);
+      const userSnap = await userRef.get();
+
+      if (userSnap.exists) {
+        const userData = userSnap.data();
+
+        if (userData?.invitedBy) {
+          const inviterQuery = await db
+            .collection("users")
+            .where("referralCode", "==", userData.invitedBy)
+            .limit(1)
+            .get();
+
+          if (!inviterQuery.empty) {
+            const inviterDoc = inviterQuery.docs[0];
+            const inviterRef = inviterDoc.ref;
+            const inviterData = inviterDoc.data();
+
+            if (!inviterData.withdrawUnlocked) {
+              await inviterRef.update({ withdrawUnlocked: true });
+            }
+          }
+        }
+      }
+    }
 
         alert("✅ Your order has been submitted successfully!\nOur team will review and approve it shortly.");
         localStorage.removeItem("selectedPlanId");
